@@ -111,7 +111,7 @@ function pickVoice() {
 function spokenOf(text) {
   const NUM = {"१९४८":"एकोणीसशे अठ्ठेचाळीस","५":"पाच","६":"सहा","७":"सात","८":"आठ","९":"नऊ","१०":"दहा"};
   return String(text).replace(/[०-९]+/g, m => NUM[m] || m).replace(/ॐ/g, "ओम").replace(/ः/g, "ह").replace(/ऽ/g, "")
-    .replace(/्(?=[\s,.;!?।॥]|$)/g, "").replace(/[॥।]/g, ".").replace(/[‘’"“”]/g, "").replace(/·/g, ",").replace(/-/g, " ");
+    .replace(/्(?=[\s,.;!?।॥]|$)/g, "").replace(/[॥।.?!:;]/g, ",").replace(/[‘’"“”()\/]/g, "").replace(/·/g, ",").replace(/-/g, " ").replace(/\s*,[\s,]*/g, ", ").replace(/,\s*$/, "");
 }
 let tok = 0;
 const alive = t => t === tok;
@@ -139,14 +139,14 @@ function speak(id, text, mantra, t) {
 }
 function tts(text, mantra, t) {
   return new Promise(resolve => {
-    if (!hasTTS || !alive(t)) { setTimeout(resolve, Math.min(7000, 800 + String(text).length * 55)); return; }
-    const parts = spokenOf(text).split(/(?<=[,.!?])\s+/).reduce((a, p) => { if (a.length && (a[a.length-1] + p).length < 120) a[a.length-1] += " " + p; else a.push(p); return a; }, []);
+    if (!hasTTS || !alive(t) || !pickVoice()) { setTimeout(resolve, Math.min(7000, 800 + String(text).length * 55)); return; }
+    const parts = spokenOf(text).split(/(?<=,)\s+/).reduce((a, p) => { if (a.length && (a[a.length-1] + p).length < 120) a[a.length-1] += " " + p; else a.push(p); return a; }, []);
     let i = 0; fakeAmp = true;
     const next = () => {
       if (!alive(t) || i >= parts.length) { fakeAmp = false; resolve(); return; }
       const txt = parts[i++]; let fin = false;
       const u = new SpeechSynthesisUtterance(txt); const v = pickVoice();
-      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = "hi-IN";
+      u.voice = v; u.lang = v.lang;
       u.rate = mantra ? 0.78 : 0.86; u.pitch = 0.72;
       const guard = setTimeout(() => { if (!fin) { fin = true; next(); } }, Math.max(3000, txt.length * 150));
       u.onend = u.onerror = () => { if (fin) return; fin = true; clearTimeout(guard); next(); };
