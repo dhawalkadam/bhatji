@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0807">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>भटजी</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;500;600&family=Tiro+Devanagari+Marathi&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="orb-wrap" aria-hidden="true">
+  <div class="ring" id="ring"></div>
+  <div class="orb" id="orb"></div>
+</div>
+
+<!-- start -->
+<section class="start" id="start">
+  <div class="start-inner">
+    <div class="eyebrow" id="stWhen"></div>
+    <h1 id="stDay"></h1>
+    <p class="sub" id="stSub"></p>
+    <button class="go" id="goBtn">सुरू करा</button>
+    <button class="link" id="resumeBtn" hidden></button>
+    <button class="link" id="dayBtn">दुसरा दिवस निवडा</button>
+    <details class="me" id="meBox">
+      <summary>संकल्पासाठी नाव आणि गोत्र</summary>
+      <label>नाव <input id="meName" autocomplete="name" placeholder="उदा. सुरेश जोशी"></label>
+      <label>गोत्र <input id="meGotra" placeholder="माहीत नसेल तर रिकामे ठेवा"></label>
+      <div class="seg" id="meG"><button data-v="m">पुरुष</button><button data-v="f">स्त्री</button></div>
+      <p class="hint">गोत्र माहीत नसेल तर परंपरेप्रमाणे काश्यप गोत्र घेतले जाईल.</p>
+    </details>
+    <details class="me" id="setBox">
+      <summary>लिपी आणि आवाज</summary>
+      <div class="lbl">स्क्रीनवर अक्षरे</div>
+      <div class="seg" id="segScript"><button data-v="dev">देवनागरी</button><button data-v="rom">English letters</button><button data-v="both">दोन्ही</button></div>
+      <div class="lbl">मंत्र मागे म्हणण्यासाठी थांबणे</div>
+      <div class="seg" id="segGap"><button data-v="1">कमी</button><button data-v="1.4">मध्यम</button><button data-v="1.9">जास्त</button></div>
+      <p class="hint" id="voiceHint"></p>
+    </details>
+    <p class="tip">फोन समोर उभा ठेवा, आवाज वाढवा.<br>भटजी बोलतील — तुम्ही फक्त ‘झालं’, ‘पुन्हा’, ‘थांबा’ म्हणा.</p>
+  </div>
+</section>
+
+<!-- session -->
+<main class="stage" id="stage" hidden>
+  <div class="top"><div class="bar"><i id="prog"></i></div><div class="title" id="title"></div></div>
+  <div class="words">
+    <div class="line" id="line"></div>
+    <div class="instr" id="instr"></div>
+    <div class="you" id="you" hidden></div>
+    <ul class="list" id="list" hidden></ul>
+    <div class="mean" id="mean"></div>
+  </div>
+  <div class="foot"><span class="mic" id="mic"></span><span id="micTxt"></span></div>
+</main>
+
+<!-- touch fallback controls (appear on tap) -->
+<nav class="ctl" id="ctl" aria-label="नियंत्रण">
+  <button id="cBack" aria-label="मागे">मागे</button>
+  <button id="cPause" aria-label="थांबा">थांबा</button>
+  <button id="cNext" class="pri" aria-label="झालं">झालं</button>
+  <button id="cExit" aria-label="बाहेर">बाहेर</button>
+</nav>
+
+<div class="sheet" id="daySheet" hidden><div class="sheet-in"><h2>दिवाळी २०२६</h2><div id="dayList"></div><p class="hint">तारखा व मुहूर्त शहर आणि पंचांगानुसार थोडे बदलू शकतात.</p></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
