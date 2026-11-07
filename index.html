@@ -3,20 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0B0807">
+<meta name="theme-color" content="#7E2A1B">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>भटजी</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@300;400;500;600&family=Tiro+Devanagari+Marathi&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Yatra+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="orb-wrap" aria-hidden="true">
-  <div class="ring" id="ring"></div>
-  <div class="orb" id="orb"></div>
-</div>
+<div class="kolam-wrap" aria-hidden="true"><svg id="kolam" viewBox="0 0 220 220"></svg></div>
 
 <!-- start -->
 <section class="start" id="start">
@@ -48,15 +45,16 @@
 
 <!-- session -->
 <main class="stage" id="stage" hidden>
-  <div class="top"><div class="bar"><i id="prog"></i></div><div class="title" id="title"></div></div>
+  <div class="top"><span id="dayLbl"></span><span id="stepLbl"></span></div>
   <div class="words">
+    <div class="steptitle" id="title"></div>
     <div class="line" id="line"></div>
     <div class="instr" id="instr"></div>
     <div class="you" id="you" hidden></div>
     <ul class="list" id="list" hidden></ul>
     <div class="mean" id="mean"></div>
   </div>
-  <div class="foot"><span class="mic" id="mic"></span><span id="micTxt"></span></div>
+  <div class="foot"><div class="pill" id="pill"><span class="mic" id="mic"></span><span id="micTxt"></span></div></div>
 </main>
 
 <!-- touch fallback controls (appear on tap) -->

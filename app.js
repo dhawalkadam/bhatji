@@ -50,9 +50,10 @@ function tl(s, mr) {
 }
 /* text in the chosen script; mr=true for Marathi speech, false for Sanskrit mantras */
 function fmt(text, mr) {
+  const r = tl(text, mr).replace(/\s*[,]\s*$/, "");
   if (prefs.script === "dev") return esc(text);
-  if (prefs.script === "rom") return esc(tl(text, mr));
-  return esc(text) + `<span class="ro">${esc(tl(text, mr))}</span>`;
+  if (prefs.script === "rom") return esc(r);
+  return esc(text) + `<span class="ro">${esc(r)}</span>`;
 }
 
 /* ---------------- data ---------------- */
@@ -193,8 +194,9 @@ function heard() { document.body.classList.remove("heard"); void document.body.o
 function micStatus() {
   const t = $("#micTxt");
   document.body.classList.toggle("listening", accepting && micOK);
-  if (!micOK) t.textContent = "माइक बंद — भटजी आपोआप पुढे जातील · स्क्रीनला टॅप करा";
-  else t.textContent = accepting ? "ऐकतोय… ‘झालं’ म्हणा" : "";
+  document.body.classList.toggle("nomic", !micOK && !$("#stage").hidden);
+  if (!micOK) t.textContent = prefs.script === "rom" ? "Mic band — Bhatji aapoaap pudhe jatil" : "माइक बंद — भटजी आपोआप पुढे जातील";
+  else t.textContent = prefs.script === "rom" ? "Aiktoy — ‘zala’ mhana" : "ऐकतोय — ‘झालं’ म्हणा";
 }
 /* wait for a spoken (or tapped) command; resolves "next" | "repeat" | "back" | "pause" | "resume" | "timeout" */
 function waitCmd(ms, t) {
@@ -222,12 +224,49 @@ const lineEl = $("#line"), instrEl = $("#instr"), meanEl = $("#mean"), youEl = $
 function showInstr(text) { lineEl.classList.remove("on"); instrEl.innerHTML = fmt(text, true); instrEl.classList.add("on"); }
 function showLine(text, mr) { instrEl.classList.remove("on"); lineEl.classList.remove("on"); setTimeout(() => { lineEl.innerHTML = fmt(text, mr); lineEl.classList.add("on"); }, 160); }
 function clearWords() { lineEl.classList.remove("on"); instrEl.classList.remove("on"); meanEl.classList.remove("on"); youEl.hidden = true; listEl.hidden = true; }
+/* ---------------- the rangoli: one more loop for every step ---------------- */
+const SVGNS = "http://www.w3.org/2000/svg", KN = 5, KS = 40, KO = 30, KR = 20;
+let kLoops = [], kDots = [], kNext = null;
+function buildKolam() {
+  const svg = $("#kolam"); svg.innerHTML = "";
+  const cells = [];
+  for (let r = 0; r < KN; r++) for (let c = 0; c < KN; c++) cells.push({ r, c, cx: KO + c * KS, cy: KO + r * KS });
+  const mid = (KN - 1) / 2;
+  // spiral outward from the centre, so the pattern grows like a real rangoli
+  cells.sort((a, b) => {
+    const da = Math.max(Math.abs(a.r - mid), Math.abs(a.c - mid)), db = Math.max(Math.abs(b.r - mid), Math.abs(b.c - mid));
+    if (da !== db) return da - db;
+    return Math.atan2(a.r - mid, a.c - mid) - Math.atan2(b.r - mid, b.c - mid);
+  });
+  const g1 = document.createElementNS(SVGNS, "g"), g2 = document.createElementNS(SVGNS, "g");
+  svg.appendChild(g1); svg.appendChild(g2);
+  const d = (cx, cy) => `M${cx} ${cy - KR} Q${cx + KR} ${cy - KR} ${cx + KR} ${cy} Q${cx + KR} ${cy + KR} ${cx} ${cy + KR} Q${cx - KR} ${cy + KR} ${cx - KR} ${cy} Q${cx - KR} ${cy - KR} ${cx} ${cy - KR}Z`;
+  kLoops = cells.map(p => { const e = document.createElementNS(SVGNS, "path"); e.setAttribute("d", d(p.cx, p.cy)); e.setAttribute("pathLength", "1"); e.setAttribute("class", "loop"); g2.appendChild(e); return e; });
+  kDots = cells.map(p => { const e = document.createElementNS(SVGNS, "circle"); e.setAttribute("cx", p.cx); e.setAttribute("cy", p.cy); e.setAttribute("r", "3"); e.setAttribute("class", "dot"); g1.appendChild(e); return e; });
+  kNext = document.createElementNS(SVGNS, "path"); kNext.setAttribute("class", "next"); g2.appendChild(kNext);
+  const c = KO + mid * KS;
+  [[0, -9], [9, 0], [0, 9], [-9, 0]].forEach(([x, y]) => { const e = document.createElementNS(SVGNS, "circle"); e.setAttribute("cx", c + x); e.setAttribute("cy", c + y); e.setAttribute("r", "4"); e.setAttribute("class", "bloom"); svg.appendChild(e); });
+  kolamCells = cells;
+}
+let kolamCells = [];
+function updateKolam(frac, complete) {
+  if (!kLoops.length) return;
+  const n = complete ? kLoops.length : Math.max(0, Math.min(kLoops.length, Math.round(frac * kLoops.length)));
+  kLoops.forEach((e, i) => { e.classList.toggle("drawn", i < n); e.classList.toggle("newest", !complete && i === n - 1); });
+  kDots.forEach((e, i) => e.classList.toggle("on", i < n));
+  if (!complete && n < kLoops.length) { kNext.setAttribute("d", kLoops[n].getAttribute("d")); kNext.style.display = ""; } else kNext.style.display = "none";
+  $("#kolam").classList.toggle("complete", !!complete);
+}
+const DEVD = "०१२३४५६७८९";
+const num = x => prefs.script === "rom" ? String(x) : String(x).replace(/\d/g, d => DEVD[d]);
 function header() {
   const steps = nodes.filter(n => n.k === "step" || n.k === "sankalp");
   const n = nodes[idx]; const p = steps.indexOf(n);
-  $("#title").textContent = n.title + (p >= 0 ? ` · ${p + 1}/${steps.length}` : "");
-  if (prefs.script === "rom") $("#title").textContent = tl($("#title").textContent, true);
-  $("#prog").style.width = (idx / (nodes.length - 1) * 100) + "%";
+  const R = prefs.script === "rom";
+  $("#dayLbl").textContent = R ? tl(day.name, true) : day.name;
+  $("#stepLbl").textContent = p >= 0 ? `${num(p + 1)} / ${num(steps.length)}` : "";
+  $("#title").textContent = R ? tl(n.title, true) : n.title;
+  updateKolam(idx / (nodes.length - 1), n.k === "end");
 }
 
 /* ---------------- the flow ---------------- */
@@ -351,7 +390,8 @@ function exitSession() {
 
 /* ---------------- start screen ---------------- */
 function showStart() {
-  document.body.classList.add("start-on", "idle");
+  document.body.classList.add("start-on", "idle"); document.body.classList.remove("listy", "nomic");
+  updateKolam(1, true);
   $("#start").hidden = false;
   const a = autoDay();
   $("#stWhen").textContent = whenLabel(day);
@@ -408,6 +448,7 @@ document.addEventListener("keydown", e => {
 
 /* ---------------- boot ---------------- */
 (async () => {
+  buildKolam();
   try { C = await (await fetch("content.json", { cache: "no-cache" })).json(); }
   catch (e) { $("#stDay").textContent = "content.json लोड झाले नाही"; return; }
   try { const r = await fetch("audio/manifest.json", { cache: "no-cache" }); if (r.ok) MAN = await r.json(); } catch (e) { MAN = {}; }
