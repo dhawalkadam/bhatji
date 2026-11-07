@@ -9,63 +9,113 @@
 <title>भटजी</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600&family=Yatra+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;500;600;700&family=Yatra+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
-<body>
-<div class="kolam-wrap" aria-hidden="true"><svg id="kolam" viewBox="0 0 220 220"></svg></div>
+<body class="on-start">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="powder" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feTurbulence type="fractalNoise" baseFrequency="2.4" numOctaves="1" seed="3" result="g"/>
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.7 1.15" result="m"/>
+      <feComposite in="d" in2="m" operator="in"/>
+    </filter>
+    <symbol id="i-restart" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5.5 2.8v3.6h3.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20c1.2-3.6 4-5.4 7.5-5.4s6.3 1.8 7.5 5.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-volup" viewBox="0 0 24 24"><path d="M3 9.5h3.5L11 5.5v13l-4.5-4H3z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M16 12h6M19 9v6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 20.5a2 2 0 0 0 4 0" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-phones" viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="4.5" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
 
-<!-- start -->
-<section class="start" id="start">
-  <div class="start-inner">
-    <div class="eyebrow" id="stWhen"></div>
-    <h1 id="stDay"></h1>
-    <p class="sub" id="stSub"></p>
-    <button class="go" id="goBtn">सुरू करा</button>
-    <button class="link" id="resumeBtn" hidden></button>
-    <button class="link" id="dayBtn">दुसरा दिवस निवडा</button>
-    <details class="me" id="meBox">
-      <summary>संकल्पासाठी नाव आणि गोत्र</summary>
-      <label>नाव <input id="meName" autocomplete="name" placeholder="उदा. सुरेश जोशी"></label>
-      <label>गोत्र <input id="meGotra" placeholder="माहीत नसेल तर रिकामे ठेवा"></label>
-      <div class="seg" id="meG"><button data-v="m">पुरुष</button><button data-v="f">स्त्री</button></div>
-      <p class="hint">गोत्र माहीत नसेल तर परंपरेप्रमाणे काश्यप गोत्र घेतले जाईल.</p>
-    </details>
-    <details class="me" id="setBox">
-      <summary>लिपी आणि आवाज</summary>
-      <div class="lbl">स्क्रीनवर अक्षरे</div>
-      <div class="seg" id="segScript"><button data-v="dev">देवनागरी</button><button data-v="rom">English letters</button><button data-v="both">दोन्ही</button></div>
-      <div class="lbl">मंत्र मागे म्हणण्यासाठी थांबणे</div>
-      <div class="seg" id="segGap"><button data-v="1">कमी</button><button data-v="1.4">मध्यम</button><button data-v="1.9">जास्त</button></div>
-      <p class="hint" id="voiceHint"></p>
-    </details>
-    <p class="tip">फोन समोर उभा ठेवा, आवाज वाढवा.<br>भटजी बोलतील — तुम्ही फक्त ‘झालं’, ‘पुन्हा’, ‘थांबा’ म्हणा.</p>
+<div class="app">
+  <header class="bar">
+    <button class="ib" id="restartBtn" aria-label="सुरुवातीपासून"><svg><use href="#i-restart"/></svg></button>
+    <button class="daypill" id="dayPill" aria-label="दिवस बदला"><svg><use href="#i-cal"/></svg><span id="dayPillTxt"></span></button>
+    <button class="ib script" id="scriptBtn" aria-label="लिपी: मराठी / English"><span class="s1">अ</span><span class="s2">A</span></button>
+  </header>
+
+  <div class="kolam-box" aria-hidden="true"><svg id="kolam" viewBox="0 0 220 220"></svg></div>
+
+  <main class="content">
+    <!-- start -->
+    <section class="screen" id="start">
+      <div class="eyebrow" id="stWhen"></div>
+      <h1 id="stDay"></h1>
+      <p class="sub" id="stSub"></p>
+      <button class="primary" id="goBtn" data-mr="सुरू करा" data-en="Start">सुरू करा</button>
+      <button class="ghost" id="resumeBtn" hidden></button>
+      <nav class="rows">
+        <button class="row" id="rowDay"><svg><use href="#i-cal"/></svg><span><b data-mr="दिवस बदला" data-en="Change day">दिवस बदला</b><small id="rowDaySub"></small></span><svg class="chev"><use href="#i-chev"/></svg></button>
+        <button class="row" id="rowMe"><svg><use href="#i-user"/></svg><span><b data-mr="नाव आणि गोत्र" data-en="Name and gotra">नाव आणि गोत्र</b><small id="rowMeSub"></small></span><svg class="chev"><use href="#i-chev"/></svg></button>
+        <button class="row" id="rowCheck"><svg><use href="#i-speaker"/></svg><span><b data-mr="आवाज आणि माइक तपासा" data-en="Check sound and mic">आवाज आणि माइक तपासा</b><small id="rowCheckSub"></small></span><svg class="chev"><use href="#i-chev"/></svg></button>
+      </nav>
+    </section>
+
+    <!-- sound + mic check -->
+    <section class="screen" id="check" hidden>
+      <div class="bigicon" id="chkIcon"><svg><use href="#i-speaker"/></svg></div>
+      <h2 id="chkTitle"></h2>
+      <div class="tiles" id="chkTiles" hidden>
+        <div class="tile"><svg><use href="#i-volup"/></svg><span data-mr="आवाज वाढवा" data-en="Volume up">आवाज वाढवा</span></div>
+        <div class="tile"><svg><use href="#i-bell"/></svg><span data-mr="सायलेंट बंद" data-en="Silent off">सायलेंट बंद</span></div>
+        <div class="tile"><svg><use href="#i-phones"/></svg><span data-mr="हेडफोन तपासा" data-en="Check headphones">हेडफोन तपासा</span></div>
+      </div>
+      <p class="help" id="chkHelp" hidden><svg><use href="#i-lock"/></svg><span id="chkHelpTxt"></span></p>
+      <div class="btns" id="chkBtns"></div>
+    </section>
+
+    <!-- the pooja -->
+    <section class="screen" id="stage" hidden>
+      <div class="steptitle" id="title"></div>
+      <div class="line" id="line"></div>
+      <div class="instr" id="instr"></div>
+      <div class="you" id="you" hidden></div>
+      <ul class="list" id="list" hidden></ul>
+    </section>
+  </main>
+
+  <footer class="foot" id="foot">
+    <div class="pill" id="pill"><span class="mic"></span><span id="micTxt"></span></div>
+    <button class="primary done" id="doneBtn" hidden data-mr="झालं" data-en="Done">झालं</button>
+  </footer>
+</div>
+
+<!-- sheets -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="daySheet" role="dialog" aria-label="दिवस"><h3 data-mr="दिवाळी २०२६" data-en="Diwali 2026">दिवाळी २०२६</h3><div id="dayList"></div>
+  <p class="hint" data-mr="तारखा व मुहूर्त शहर आणि पंचांगानुसार थोडे बदलू शकतात." data-en="Dates and muhurat vary a little by city and panchang.">तारखा व मुहूर्त शहर आणि पंचांगानुसार थोडे बदलू शकतात.</p></div>
+<div class="sheet" id="scriptSheet" role="dialog" aria-label="लिपी">
+  <h3 data-mr="अक्षरं कशी दिसावी?" data-en="How should text appear?">अक्षरं कशी दिसावी?</h3>
+  <div class="opts" id="scriptOpts">
+    <button data-v="both"><b>मराठी</b><small>English</small></button>
+    <button data-v="both-en"><b>English</b><small>मराठी</small></button>
+    <button data-v="dev"><b>मराठी</b><small>&nbsp;</small></button>
+    <button data-v="rom"><b>English</b><small>&nbsp;</small></button>
   </div>
-</section>
-
-<!-- session -->
-<main class="stage" id="stage" hidden>
-  <div class="top"><span id="dayLbl"></span><span id="stepLbl"></span></div>
-  <div class="words">
-    <div class="steptitle" id="title"></div>
-    <div class="line" id="line"></div>
-    <div class="instr" id="instr"></div>
-    <div class="you" id="you" hidden></div>
-    <ul class="list" id="list" hidden></ul>
-    <div class="mean" id="mean"></div>
-  </div>
-  <div class="foot"><div class="pill" id="pill"><span class="mic" id="mic"></span><span id="micTxt"></span></div></div>
-</main>
-
-<!-- touch fallback controls (appear on tap) -->
-<nav class="ctl" id="ctl" aria-label="नियंत्रण">
-  <button id="cBack" aria-label="मागे">मागे</button>
-  <button id="cPause" aria-label="थांबा">थांबा</button>
-  <button id="cNext" class="pri" aria-label="झालं">झालं</button>
-  <button id="cExit" aria-label="बाहेर">बाहेर</button>
-</nav>
-
-<div class="sheet" id="daySheet" hidden><div class="sheet-in"><h2>दिवाळी २०२६</h2><div id="dayList"></div><p class="hint">तारखा व मुहूर्त शहर आणि पंचांगानुसार थोडे बदलू शकतात.</p></div></div>
+  <div class="lbl" data-mr="मंत्र मागे म्हणण्यासाठी वेळ" data-en="Time to repeat each mantra line">मंत्र मागे म्हणण्यासाठी वेळ</div>
+  <div class="seg" id="segGap"><button data-v="1" data-mr="कमी" data-en="Less">कमी</button><button data-v="1.4" data-mr="मध्यम" data-en="Medium">मध्यम</button><button data-v="1.9" data-mr="जास्त" data-en="More">जास्त</button></div>
+</div>
+<div class="sheet" id="meSheet" role="dialog" aria-label="नाव आणि गोत्र">
+  <h3 data-mr="संकल्पासाठी" data-en="For the sankalp">संकल्पासाठी</h3>
+  <label><span data-mr="नाव" data-en="Name">नाव</span><input id="meName" autocomplete="name" placeholder="सुरेश जोशी"></label>
+  <label><span data-mr="गोत्र" data-en="Gotra">गोत्र</span><input id="meGotra" placeholder="काश्यप"></label>
+  <div class="seg" id="meG"><button data-v="m" data-mr="पुरुष" data-en="Man">पुरुष</button><button data-v="f" data-mr="स्त्री" data-en="Woman">स्त्री</button></div>
+  <p class="hint" data-mr="गोत्र माहीत नसेल तर रिकामे ठेवा — परंपरेप्रमाणे काश्यप गोत्र घेतले जाईल." data-en="Don't know your gotra? Leave it blank — Kashyap is used, as tradition suggests.">गोत्र माहीत नसेल तर रिकामे ठेवा — परंपरेप्रमाणे काश्यप गोत्र घेतले जाईल.</p>
+  <button class="primary" id="meDone" data-mr="ठीक आहे" data-en="Done">ठीक आहे</button>
+</div>
+<div class="sheet" id="restartSheet" role="dialog" aria-label="सुरुवातीपासून">
+  <h3 data-mr="ही पूजा सुरुवातीपासून करायची?" data-en="Start this pooja from the beginning?">ही पूजा सुरुवातीपासून करायची?</h3>
+  <div class="btns"><button class="primary" id="rsYes" data-mr="हो, सुरुवातीपासून" data-en="Yes, from the start">हो, सुरुवातीपासून</button><button class="ghost" id="rsHome" data-mr="मुख्य पानावर जा" data-en="Go to home">मुख्य पानावर जा</button><button class="ghost" id="rsNo" data-mr="नको, पुढे चालू ठेवा" data-en="No, continue">नको, पुढे चालू ठेवा</button></div>
+</div>
 
 <script src="app.js"></script>
 </body>
