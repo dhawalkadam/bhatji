@@ -264,9 +264,9 @@ let toastT = 0;
 function toast(m) { let t = $(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); } t.textContent = m; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2600); }
 
 const lineEl = $("#line"), instrEl = $("#instr"), youEl = $("#you"), listEl = $("#list");
-function showInstr(text, explain) { lineEl.classList.remove("on", "rep"); instrEl.classList.toggle("explain", !!explain); instrEl.innerHTML = fmt(text, true); instrEl.classList.add("on"); }
-function showLine(text, mr) { instrEl.classList.remove("on"); lineEl.classList.remove("on", "rep"); setTimeout(() => { lineEl.innerHTML = fmt(text, mr); lineEl.classList.add("on"); }, 140); }
-function clearWords() { lineEl.classList.remove("on", "rep"); instrEl.classList.remove("on"); youEl.hidden = true; listEl.hidden = true; }
+function showInstr(text, explain) { lineEl.classList.remove("on", "rep"); lineEl.innerHTML = ""; instrEl.classList.toggle("explain", !!explain); instrEl.innerHTML = fmt(text, true); instrEl.classList.add("on"); }
+function showLine(text, mr) { instrEl.classList.remove("on"); instrEl.innerHTML = ""; lineEl.classList.remove("on", "rep"); setTimeout(() => { lineEl.innerHTML = fmt(text, mr); lineEl.classList.add("on"); }, 140); }
+function clearWords() { lineEl.classList.remove("on", "rep"); instrEl.classList.remove("on"); lineEl.innerHTML = ""; instrEl.innerHTML = ""; youEl.hidden = true; listEl.hidden = true; }
 const DEVD = "०१२३४५६७८९";
 const num = x => isEN() ? String(x) : String(x).replace(/\d/g, d => DEVD[d]);
 function header() {
