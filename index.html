@@ -32,6 +32,7 @@
     <symbol id="i-phones" viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="4.5" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="16.5" y="14" width="4.5" height="6.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
     <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
     <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   </defs>
 </svg>
@@ -56,11 +57,12 @@
       <nav class="rows">
         <button class="row" id="rowDay"><svg><use href="#i-cal"/></svg><span><b data-mr="दिवस बदला" data-en="Change day">दिवस बदला</b><small id="rowDaySub"></small></span><svg class="chev"><use href="#i-chev"/></svg></button>
         <button class="row" id="rowMe"><svg><use href="#i-user"/></svg><span><b data-mr="नाव आणि गोत्र" data-en="Name and gotra">नाव आणि गोत्र</b><small id="rowMeSub"></small></span><svg class="chev"><use href="#i-chev"/></svg></button>
-        <button class="row" id="rowCheck"><svg><use href="#i-speaker"/></svg><span><b data-mr="आवाज आणि माइक तपासा" data-en="Check sound and mic">आवाज आणि माइक तपासा</b><small id="rowCheckSub"></small></span><svg class="chev"><use href="#i-chev"/></svg></button>
+        <button class="row" id="rowCheck"><svg><use href="#i-speaker"/></svg><span><b data-mr="आवाज तपासा" data-en="Check sound">आवाज तपासा</b><small id="rowCheckSub"></small></span><svg class="chev"><use href="#i-chev"/></svg></button>
+        <button class="row" id="rowMic"><svg><use href="#i-mic"/></svg><span><b data-mr="आवाजाने पुढे जा" data-en="Move on by voice">आवाजाने पुढे जा</b><small id="rowMicSub"></small></span><span class="switch" id="micSwitch" aria-hidden="true"></span></button>
       </nav>
     </section>
 
-    <!-- sound + mic check -->
+    <!-- sound check -->
     <section class="screen" id="check" hidden>
       <div class="bigicon" id="chkIcon"><svg><use href="#i-speaker"/></svg></div>
       <h2 id="chkTitle"></h2>
@@ -85,7 +87,11 @@
 
   <footer class="foot" id="foot">
     <div class="pill" id="pill"><span class="mic"></span><span id="micTxt"></span></div>
-    <button class="primary done" id="doneBtn" hidden data-mr="झालं" data-en="Done">झालं</button>
+    <nav class="nav" aria-label="पायऱ्या">
+      <button class="navb" id="navBack"><svg><use href="#i-prev"/></svg><span data-mr="मागे" data-en="Back">मागे</span></button>
+      <button class="navb" id="navRepeat"><svg><use href="#i-restart"/></svg><span data-mr="पुन्हा" data-en="Again">पुन्हा</span></button>
+      <button class="navb pri" id="navNext"><span id="navNextTxt">पुढे</span><svg><use href="#i-chev"/></svg></button>
+    </nav>
   </footer>
 </div>
 

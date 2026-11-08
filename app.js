@@ -48,7 +48,7 @@ function tl(s, mr) {
   return String(s).replace(/॥/g, ".").replace(/।/g, ",").replace(/[ऀ-ॿ]+/g, w => tlWord(w, mr))
     .replace(/(^|[.!?]\s+|\n)([a-z])/g, (m, a, b) => a + b.toUpperCase());
 }
-Object.assign(TDICT, {"म्हणजे":"mhanje","म्हणून":"mhanun","म्हटलं":"mhatla","आपण":"aapan","सगळी":"sagli","सगळ्या":"saglya","त्यांचं":"tyancha","त्यांना":"tyanna","केलेलं":"kelela","घातलं":"ghatla","केलं":"kela","सांगणं":"sangna","लिहिणं":"lihina","होतं":"hota","कामं":"kama","नावं":"nava","तीर्थं":"tirtha","प्यायल्याने":"pyaylyane","ऐकू":"aiku","येतोय":"yetoy","मोठ्याने":"mothyane","बटण":"batan","सुरुवात":"suruvat","दाबा":"daba"});
+Object.assign(TDICT, {"माइक":"mic","माइकची":"micchi","माइकशिवाय":"mic-shivay","माइकने":"micne","परवानगी":"parvangi","प्रयत्न":"prayatna","आवाजाने":"aavajane","म्हणजे":"mhanje","म्हणून":"mhanun","म्हटलं":"mhatla","आपण":"aapan","सगळी":"sagli","सगळ्या":"saglya","त्यांचं":"tyancha","त्यांना":"tyanna","केलेलं":"kelela","घातलं":"ghatla","केलं":"kela","सांगणं":"sangna","लिहिणं":"lihina","होतं":"hota","कामं":"kama","नावं":"nava","तीर्थं":"tirtha","प्यायल्याने":"pyaylyane","ऐकू":"aiku","येतोय":"yetoy","मोठ्याने":"mothyane","बटण":"batan","सुरुवात":"suruvat","दाबा":"daba"});
 
 /* text in the chosen script.  modes: both (Marathi leads) · both-en (English leads) · dev · rom */
 function fmt(text, mr) {
@@ -162,7 +162,8 @@ function tts(text, mantra, t) {
 /* ---------------- listening ---------------- */
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, micWanted = false, accepting = false, cmdResolve = null, lastCmdAt = 0;
-let micMode = store.get("micMode", null);   // "on" once the check heard you; "off" if you chose to go without
+let micMode = store.get("micMode2", "on");   // "on": try to listen in the background · "off": buttons only
+let micHeard = false, micDenied = false;   // micHeard: Bhatji has actually understood you at least once this session
 let onAnyHeard = null;
 const RX = {
   next: /(झाल|झाले|जाल|जाले|हो गया|पुढे|पुढं|ओके|ठीक|\bzal|\bjhal|\bdone\b|\bnext\b|\bok(ay)?\b|^\s*हो\s*$|^\s*ho\s*$)/i,
@@ -182,10 +183,13 @@ function startMic(onDenied) {
         const tr = (e.results[i][0].transcript || "").trim();
         if (onAnyHeard && tr) { const f = onAnyHeard; onAnyHeard = null; f(tr); return; }
         if (!accepting) continue;
-        for (let j = 0; j < e.results[i].length; j++) { const k = classify(e.results[i][j].transcript || ""); if (k) { heard(); command(k, "voice"); return; } }
+        for (let j = 0; j < e.results[i].length; j++) { const k = classify(e.results[i][j].transcript || ""); if (k) { micHeard = true; heard(); command(k, "voice"); return; } }
       }
     };
-    rec.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { micWanted = false; rec._denied = true; rec._onDenied && rec._onDenied(); } };
+    rec.onerror = e => {
+      if (e.error === "language-not-supported") { const L2 = ["mr-IN", "hi-IN", "en-IN"]; const i = L2.indexOf(rec.lang); if (i < L2.length - 1) rec.lang = L2[i + 1]; return; }
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") { micWanted = false; rec._denied = true; rec._onDenied && rec._onDenied(); }
+    };
     rec.onend = () => { if (micWanted) setTimeout(() => { try { rec.start(); } catch (e) {} }, 300); };
   }
   rec._onDenied = onDenied;
@@ -195,11 +199,10 @@ function startMic(onDenied) {
 function stopMic() { micWanted = false; try { rec && rec.stop(); } catch (e) {} }
 function heard() { document.body.classList.remove("heard"); void document.body.offsetWidth; document.body.classList.add("heard"); }
 function micStatus() {
-  const useMic = micMode === "on";
-  document.body.classList.toggle("nomic", !useMic);
-  document.body.classList.toggle("listening", accepting && useMic);
-  $("#doneBtn").hidden = useMic || !accepting;
-  $("#micTxt").textContent = isEN() ? "Listening — say ‘zala’" : "ऐकतोय — ‘झालं’ म्हणा";
+  const live = micMode === "on" && !micDenied && !!SR;
+  document.body.classList.toggle("listening", accepting && live);
+  $("#micTxt").textContent = isEN() ? "Listening — say ‘zala’ or tap" : "ऐकतोय — ‘झालं’ म्हणा किंवा बटण दाबा";
+  const nt = $("#navNextTxt"); if (nt) nt.textContent = accepting ? (isEN() ? "Done" : "झालं") : (isEN() ? "Next" : "पुढे");
 }
 function waitCmd(ms, t) {
   return new Promise(resolve => {
@@ -214,7 +217,7 @@ function command(k, src) {
   const now = performance.now(); if (now - lastCmdAt < 1200) return; lastCmdAt = now;
   if (k === "pause" && !paused) { pause(); return; }
   if (cmdResolve) { cmdResolve(k); return; }
-  if (src === "tap") { if (k === "next") go(idx + 1); else if (k === "back") go(idx - 1); }
+  if (src === "tap") { if (k === "next") go(idx + 1); else if (k === "back") go(idx - 1); else if (k === "repeat") go(idx); }
 }
 
 /* ---------------- the rangoli: one more loop for every step ---------------- */
@@ -326,9 +329,8 @@ async function runNode(t) {
   return next(t, false);
 }
 async function awaitDone(secs, t) {
-  const useMic = micMode === "on";
-  // without the mic Bhatji never moves on by himself: you tap ‘झालं’
-  let r = await waitCmd(useMic ? secs * 1000 : Infinity, t);
+  // Bhatji only moves on by himself once he has actually heard you; otherwise he waits for your tap
+  let r = await waitCmd(micHeard ? secs * 1000 : Infinity, t);
   if (r === "timeout") {
     await sayPhrase("checkin", t); if (!alive(t)) return;
     r = await waitCmd(25000, t);
@@ -381,51 +383,18 @@ async function soundStep() {
   checkUI("i-speaker", "भटजींचा आवाज ऐकू येतोय?", "", [], { live: true });
   await speak(phrase("hear").id, phrase("hear").text, false, t); if (!alive(t)) return;
   checkUI("i-speaker", "भटजींचा आवाज ऐकू आला?", "", [
-    { l: "हो, ऐकू आला", f: micStep },
+    { l: "हो, ऐकू आला", f: endCheck },
     { l: "नाही", ghost: true, f: () => {
       checkUI("i-speaker", "आवाज ऐकू येत नाही?", "हे तपासा, मग पुन्हा ऐका", [{ l: "पुन्हा ऐका", f: soundStep }], { tiles: true });
     } }
   ]);
 }
-async function micStep() {
-  tok++; const t = tok;
-  if (!SR) {
-    checkUI("i-mic", "या ब्राउझरमध्ये माइक चालत नाही", "Chrome मध्ये उघडा, किंवा माइकशिवाय सुरू करा", [{ l: "माइकशिवाय सुरू करा", f: () => endCheck("off") }]);
-    return;
-  }
-  checkUI("i-mic", "आता मोठ्याने ‘हो’ म्हणा", "ब्राउझर माइकची परवानगी मागेल — Allow निवडा", [], { live: true });
-  let got = false;
-  const denied = () => { if (got || !alive(t)) return; got = true; onAnyHeard = null; micFail(true); };
-  onAnyHeard = async () => {
-    if (!alive(t)) return; got = true;
-    checkUI("i-check", "छान! भटजी तुमचं ऐकतील", "पायरी झाली की ‘झालं’ म्हणा", [], { ok: true });
-    await speak(phrase("heardyou").id, phrase("heardyou").text, false, t); if (!alive(t)) return;
-    endCheck("on");
-  };
-  startMic(denied);
-  await speak(phrase("sayho").id, phrase("sayho").text, false, t); if (!alive(t)) return;
-  await sleep(9000, t); if (!alive(t) || got) return;
-  onAnyHeard = null;
-  if (rec && rec._denied) return micFail(true);
-  await speak(phrase("notheard").id, phrase("notheard").text, false, t);
-  micFail(false);
-}
-function micFail(denied) {
-  stopMic();
-  const help = isEN() ? "Tap the lock icon next to the web address → Microphone → Allow, then try again."
-                      : "वेबसाइटच्या पत्त्याजवळच्या कुलूप चिन्हावर टॅप करा → Microphone → Allow, मग पुन्हा प्रयत्न करा.";
-  checkUI("i-mic", denied ? "माइकची परवानगी नाही" : "आवाज ऐकू आला नाही", "", [
-    { l: "पुन्हा प्रयत्न करा", f: micStep },
-    { l: "माइकशिवाय सुरू करा", ghost: true, f: async () => { tok++; const t = tok; await speak(phrase("nomic").id, phrase("nomic").text, false, t); endCheck("off"); } }
-  ], { help });
-}
-function endCheck(mode) {
-  micMode = mode; store.set("micMode", mode); store.set("checkedAt", Date.now());
-  if (mode === "off") stopMic();
+function endCheck() {
+  tok++; store.set("checkedAt", Date.now());
   const f = afterCheck; afterCheck = null;
   if (f) f(); else showStart();
 }
-const needsCheck = () => Date.now() - store.get("checkedAt", 0) > 12 * 3600e3 || !micMode;
+const needsCheck = () => Date.now() - store.get("checkedAt", 0) > 12 * 3600e3;
 
 /* ---------------- session start / stop ---------------- */
 let wake = null;
@@ -442,7 +411,8 @@ function unlock() {
 function begin(from) {
   if (needsCheck()) { runCheck(() => begin(from)); return; }
   unlock(); keepAwake(); if (!ampRAF) ampLoop();
-  if (micMode === "on") startMic(() => { micMode = "off"; store.set("micMode", "off"); micStatus(); toast(L("माइक बंद — ‘झालं’ बटण वापरा")); });
+  micHeard = false; micDenied = false;
+  if (micMode === "on" && SR) startMic(() => { micDenied = true; micStatus(); toast(L("माइक बंद — खालची बटणे वापरा")); });
   nodes = day.nodes; showScreen("stage"); micStatus();
   go(from);
 }
@@ -463,7 +433,9 @@ function showStart() {
   if (p > 1 && p < day.nodes.length - 1) { rb.hidden = false; rb.textContent = L("पुढे सुरू करा — " + day.nodes[p].title); } else rb.hidden = true;
   $("#rowDaySub").textContent = L(day === a.d ? "आपोआप निवडला" : "तुम्ही निवडला");
   $("#rowMeSub").textContent = me.name ? (L(me.name) + " · " + L((me.gotra || "काश्यप") + " गोत्र")) : L("संकल्पात तुमचे नाव येईल");
-  $("#rowCheckSub").textContent = micMode === "on" ? L("माइक चालू — भटजी ऐकतील") : micMode === "off" ? L("माइकशिवाय — ‘झालं’ बटण") : L("पहिल्यांदा सुरू करताना");
+  $("#rowCheckSub").textContent = L(needsCheck() ? "पूजेपूर्वी एकदा" : "तपासले आहे");
+  $("#micSwitch").classList.toggle("on", micMode === "on");
+  $("#rowMicSub").textContent = !SR ? L("या ब्राउझरमध्ये चालत नाही — बटणे वापरा") : L(micMode === "on" ? "‘झालं’ म्हणा, किंवा बटण दाबा" : "बंद — फक्त बटणे");
 }
 function pickDay(d) { day = d; store.set("day", { id: d.id, at: Date.now() }); if (!$("#stage").hidden) exitSession(); else showStart(); }
 function openDays() {
@@ -475,6 +447,7 @@ function openDays() {
 $("#dayPill").onclick = openDays; $("#rowDay").onclick = openDays;
 $("#rowMe").onclick = () => { syncSeg(); sheet("#meSheet"); };
 $("#rowCheck").onclick = () => runCheck(null);
+$("#rowMic").onclick = () => { micMode = micMode === "on" ? "off" : "on"; store.set("micMode2", micMode); showStart(); };
 $("#meDone").onclick = () => { closeSheets(); showStart(); };
 $("#goBtn").onclick = () => begin(0);
 $("#resumeBtn").onclick = () => begin(prog[day.id] || 0);
@@ -503,7 +476,9 @@ $("#restartBtn").onclick = () => sheet("#restartSheet");
 $("#rsYes").onclick = () => { closeSheets(); if (!$("#stage").hidden) go(0); };
 $("#rsHome").onclick = () => { closeSheets(); exitSession(); };
 $("#rsNo").onclick = closeSheets;
-$("#doneBtn").onclick = () => { lastCmdAt = 0; command("next", "tap"); };
+$("#navNext").onclick = () => { lastCmdAt = 0; command("next", "tap"); };
+$("#navBack").onclick = () => { lastCmdAt = 0; if (cmdResolve) cmdResolve("back"); else go(idx - 1); };
+$("#navRepeat").onclick = () => { lastCmdAt = 0; if (cmdResolve) cmdResolve("repeat"); else go(idx); };
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && openSheet) { closeSheets(); return; }
   if ($("#stage").hidden || openSheet) return;

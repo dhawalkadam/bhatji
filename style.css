@@ -109,16 +109,25 @@ body.s-rom .instr.explain:before,body.s-both-en .instr.explain:before{content:"M
 .list li:before{content:"";position:absolute;left:0;top:12px;width:6px;height:6px;border-radius:50%;background:var(--haldi)}
 body.listy #stage{justify-content:flex-start}
 
-/* ---------- footer ---------- */
-.foot{flex:none;width:100%;max-width:640px;min-height:76px;display:flex;align-items:center;justify-content:center;padding:10px 24px 14px;border-top:1.5px dashed rgba(251,243,228,.25)}
+/* ---------- footer: manual navigation is always there ---------- */
+.foot{flex:none;width:100%;max-width:640px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 16px 12px;border-top:1.5px dashed rgba(251,243,228,.25)}
 body.on-start .foot,body.on-check .foot{display:none}
-.pill{display:flex;align-items:center;gap:8px;min-height:42px;border:1.5px solid var(--haldi);border-radius:999px;padding:6px 18px;font-size:15px;color:var(--haldi);opacity:0;transform:translateY(6px);transition:opacity .4s,transform .4s}
-body.listening .pill{opacity:1;transform:none}
-.mic{width:9px;height:9px;border-radius:50%;background:var(--haldi);animation:pulse 1.6s ease-in-out infinite}
+.pill{display:flex;align-items:center;gap:8px;min-height:30px;padding:0 14px;border-radius:999px;font-size:14px;color:var(--haldi);opacity:0;transition:opacity .4s}
+body.listening .pill{opacity:1}
+.mic{width:8px;height:8px;border-radius:50%;background:var(--haldi);animation:pulse 1.6s ease-in-out infinite}
 body.heard .pill{animation:heard .9s ease-out}
-@keyframes heard{0%{background:rgba(244,198,78,.45);transform:scale(1.04)}100%{background:transparent;transform:none}}
-.done{max-width:260px}
-body.nomic .pill{display:none}
+@keyframes heard{0%{background:rgba(244,198,78,.45)}100%{background:transparent}}
+.nav{display:grid;grid-template-columns:1fr 1fr 1.6fr;gap:10px;width:100%;max-width:460px}
+.navb{min-height:52px;border-radius:26px;border:1.5px solid rgba(251,243,228,.4);background:rgba(0,0,0,.1);color:var(--chalk);display:flex;align-items:center;justify-content:center;gap:6px;font-size:16px;font-weight:500;transition:background .2s,transform .15s}
+.navb svg{width:18px;height:18px;flex:none}
+.navb:active{transform:scale(.97)}
+.navb.pri{background:var(--chalk);color:var(--floor);border-color:var(--chalk);font-weight:700;font-size:17px}
+body.waiting .navb.pri{box-shadow:0 0 0 0 rgba(244,198,78,.6);animation:nudge 2.2s ease-out infinite}
+@keyframes nudge{0%{box-shadow:0 0 0 0 rgba(244,198,78,.55)}100%{box-shadow:0 0 0 12px rgba(244,198,78,0)}}
+.row span.switch,.switch{flex:none;width:44px;height:26px;border-radius:13px;background:rgba(251,243,228,.25);position:relative;flex:none;transition:background .25s}
+.switch:after{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:var(--chalk);transition:transform .25s}
+.switch.on{background:var(--haldi)}
+.switch.on:after{transform:translateX(18px);background:var(--floor)}
 
 /* ---------- sheets ---------- */
 .scrim{position:fixed;inset:0;z-index:20;background:rgba(40,10,5,.55);opacity:0;pointer-events:none;transition:opacity .3s}
