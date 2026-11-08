@@ -77,20 +77,21 @@
 
     <!-- the pooja -->
     <section class="screen" id="stage" hidden>
-      <div class="steptitle" id="title"></div>
+      <button class="steptitle" id="title" aria-label="सर्व पायऱ्या"></button>
       <div class="line" id="line"></div>
       <div class="instr" id="instr"></div>
       <div class="you" id="you" hidden></div>
       <ul class="list" id="list" hidden></ul>
+      <ol class="steps" id="steps" hidden></ol>
     </section>
   </main>
 
   <footer class="foot" id="foot">
     <div class="pill" id="pill"><span class="mic"></span><span id="micTxt"></span></div>
     <nav class="nav" aria-label="पायऱ्या">
-      <button class="navb" id="navBack"><svg><use href="#i-prev"/></svg><span data-mr="मागे" data-en="Back">मागे</span></button>
-      <button class="navb" id="navRepeat"><svg><use href="#i-restart"/></svg><span data-mr="पुन्हा" data-en="Again">पुन्हा</span></button>
+      <button class="navb side" id="navBack" aria-label="मागे"><svg><use href="#i-prev"/></svg></button>
       <button class="navb pri" id="navNext"><span id="navNextTxt">पुढे</span><svg><use href="#i-chev"/></svg></button>
+      <button class="navb side" id="navRepeat" aria-label="पुन्हा"><svg><use href="#i-restart"/></svg></button>
     </nav>
   </footer>
 </div>
@@ -118,6 +119,7 @@
   <p class="hint" data-mr="गोत्र माहीत नसेल तर रिकामे ठेवा — परंपरेप्रमाणे काश्यप गोत्र घेतले जाईल." data-en="Don't know your gotra? Leave it blank — Kashyap is used, as tradition suggests.">गोत्र माहीत नसेल तर रिकामे ठेवा — परंपरेप्रमाणे काश्यप गोत्र घेतले जाईल.</p>
   <button class="primary" id="meDone" data-mr="ठीक आहे" data-en="Done">ठीक आहे</button>
 </div>
+<div class="sheet" id="stepsSheet" role="dialog" aria-label="पायऱ्या"><h3 data-mr="आजच्या पायऱ्या" data-en="Today's steps">आजच्या पायऱ्या</h3><ol class="steps" id="stepsSheetList"></ol></div>
 <div class="sheet" id="restartSheet" role="dialog" aria-label="सुरुवातीपासून">
   <h3 data-mr="ही पूजा सुरुवातीपासून करायची?" data-en="Start this pooja from the beginning?">ही पूजा सुरुवातीपासून करायची?</h3>
   <div class="btns"><button class="primary" id="rsYes" data-mr="हो, सुरुवातीपासून" data-en="Yes, from the start">हो, सुरुवातीपासून</button><button class="ghost" id="rsHome" data-mr="मुख्य पानावर जा" data-en="Go to home">मुख्य पानावर जा</button><button class="ghost" id="rsNo" data-mr="नको, पुढे चालू ठेवा" data-en="No, continue">नको, पुढे चालू ठेवा</button></div>

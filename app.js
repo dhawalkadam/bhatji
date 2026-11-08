@@ -217,7 +217,7 @@ function command(k, src) {
   const now = performance.now(); if (now - lastCmdAt < 1200) return; lastCmdAt = now;
   if (k === "pause" && !paused) { pause(); return; }
   if (cmdResolve) { cmdResolve(k); return; }
-  if (src === "tap") { if (k === "next") go(idx + 1); else if (k === "back") go(idx - 1); else if (k === "repeat") go(idx); }
+  if (src === "tap") { if (k === "next") partNext(); else if (k === "back") partBack(); else if (k === "repeat") partAgain(); }
 }
 
 /* ---------------- the rangoli: one more loop for every step ---------------- */
@@ -279,28 +279,59 @@ function dayPillText() { $("#dayPillTxt").textContent = L(day.name); }
 
 /* ---------------- the flow ---------------- */
 let paused = false;
-const R = ["r1", "r2", "r3", "r4", "r5"]; let lastR = -1;
 const phrase = k => C.phrases[k];
 async function sayPhrase(k, t, explain) { const p = phrase(k); showInstr(p.text, explain); return speak(p.id, p.text, false, t); }
 
-function go(i) {
+let pi = 0;   // which part of the step is playing: instruction, a mantra line, the meaning…
+const isPart = it => (it.t === "say" && it.id !== phrase("repeat").id && it.id !== phrase("howto").id) || it.t === "line" || it.t === "you";
+function go(i, part) {
   tok++; stopSound(); paused = false; document.body.classList.remove("paused");
   if (cmdResolve) cmdResolve("cancel");
-  idx = Math.max(0, Math.min(nodes.length - 1, i));
+  if (i >= nodes.length) i = nodes.length - 1;
+  idx = Math.max(0, i); pi = part || 0;
   prog[day.id] = idx; store.set("prog", prog);
-  runNode(tok);
+  runNode(tok, pi);
 }
-async function runNode(t) {
+/* Back / Next / Again move one part at a time, then on into the neighbouring step */
+function partNext() {
+  if (cmdResolve) { cmdResolve("next"); return; }
+  const items = nodes[idx].items;
+  for (let k = pi + 1; k < items.length; k++) if (isPart(items[k]) || items[k].t === "wait") return go(idx, k);
+  go(idx + 1);
+}
+function partBack() {
+  const items = nodes[idx].items;
+  for (let k = pi - 1; k >= 0; k--) if (isPart(items[k])) return go(idx, k);
+  if (idx === 0) return go(0);
+  const prev = nodes[idx - 1].items; let last = 0;
+  prev.forEach((it, k) => { if (isPart(it)) last = k; });
+  go(idx - 1, last);
+}
+function partAgain() {
+  const items = nodes[idx].items;
+  if (items[pi] && items[pi].t === "wait") { const f = items.findIndex(it => it.t === "line"); return go(idx, f >= 0 ? f : 0); }
+  go(idx, pi);
+}
+function renderSteps(ol) {
+  const steps = nodes.map((n, i) => ({ n, i })).filter(x => x.n.k === "step" || x.n.k === "sankalp");
+  ol.innerHTML = steps.map(x => `<li><button data-i="${x.i}" class="${x.i < idx ? "done" : x.i === idx ? "cur" : ""}">${esc(L(x.n.title))}</button></li>`).join("");
+  ol.querySelectorAll("button").forEach(b => b.onclick = () => { closeSheets(); go(+b.dataset.i); });
+}
+async function runNode(t, start = 0) {
   const n = nodes[idx]; header(); clearWords();
   document.body.classList.toggle("listy", n.k === "samagri");
+  document.body.classList.toggle("overview", n.k === "overview");
+  $("#steps").hidden = n.k !== "overview"; if (n.k === "overview") renderSteps($("#steps"));
   if (n.k === "samagri") listEl.innerHTML = n.list.map(x => `<li>${esc(L(x))}</li>`).join("");
   let lastSay = "", sawLine = false;
-  for (const it of n.items) {
+  for (let k = 0; k < start; k++) { const it = n.items[k]; if (it.t === "say" && !it.explain && it.id !== phrase("repeat").id) lastSay = it.show || it.text; if (it.t === "line") sawLine = true; }
+  for (let k = start; k < n.items.length; k++) {
     if (!alive(t)) return;
+    pi = k; const it = n.items[k];
     if (it.t === "say") {
       if (it.id === phrase("howto").id) continue;
       if (!it.explain && it.id !== phrase("repeat").id) lastSay = it.show || it.text;
-      showInstr(it.show || it.text, it.explain); if (n.k === "samagri") listEl.hidden = false;
+      if (n.k !== "overview") showInstr(it.show || it.text, it.explain); if (n.k === "samagri") listEl.hidden = false;
       await speak(it.id, it.text, false, t); if (!alive(t)) return;
       await sleep(it.explain ? 900 : 350, t);
     } else if (it.t === "line") {
@@ -318,15 +349,15 @@ async function runNode(t) {
       youEl.hidden = true;
     } else if (it.t === "auto") {
       await sleep(sawLine ? 1600 : 900, t); if (!alive(t)) return;
-      return next(t, false);
+      return next(t);
     } else if (it.t === "wait") {
-      if (lastSay) showInstr(lastSay);
+      if (lastSay && n.k !== "overview") showInstr(lastSay);
       if (n.k === "samagri") listEl.hidden = false;
       return awaitDone(it.secs || 30, t);
     }
   }
   if (n.k === "end") return finish(t);
-  return next(t, false);
+  return next(t);
 }
 async function awaitDone(secs, t) {
   // Bhatji only moves on by himself once he has actually heard you; otherwise he waits for your tap
@@ -334,19 +365,14 @@ async function awaitDone(secs, t) {
   if (r === "timeout") {
     await sayPhrase("checkin", t); if (!alive(t)) return;
     r = await waitCmd(25000, t);
-    if (r === "timeout") { await sayPhrase("moveon", t); if (!alive(t)) return; return next(t, false); }
+    if (r === "timeout") { await sayPhrase("moveon", t); if (!alive(t)) return; return next(t); }
   }
   if (r === "cancel" || !alive(t)) return;
-  if (r === "repeat") return go(idx);
-  if (r === "back") return go(idx - 1);
-  return next(t, true);
+  if (r === "repeat") return partAgain();
+  if (r === "back") return partBack();
+  return next(t);
 }
-async function next(t, praise) {
-  if (!alive(t)) return;
-  if (praise) { let i; do { i = Math.floor(Math.random() * R.length); } while (i === lastR); lastR = i; await sayPhrase(R[i], t); if (!alive(t)) return; await sleep(250, t); }
-  if (!alive(t)) return;
-  go(idx + 1);
-}
+async function next(t) { if (alive(t)) go(idx + 1); }
 async function pause() {
   tok++; const t = tok; stopSound(); if (cmdResolve) cmdResolve("cancel");
   paused = true; document.body.classList.add("paused");
@@ -476,16 +502,17 @@ $("#restartBtn").onclick = () => sheet("#restartSheet");
 $("#rsYes").onclick = () => { closeSheets(); if (!$("#stage").hidden) go(0); };
 $("#rsHome").onclick = () => { closeSheets(); exitSession(); };
 $("#rsNo").onclick = closeSheets;
-$("#navNext").onclick = () => { lastCmdAt = 0; command("next", "tap"); };
-$("#navBack").onclick = () => { lastCmdAt = 0; if (cmdResolve) cmdResolve("back"); else go(idx - 1); };
-$("#navRepeat").onclick = () => { lastCmdAt = 0; if (cmdResolve) cmdResolve("repeat"); else go(idx); };
+$("#navNext").onclick = () => { lastCmdAt = 0; partNext(); };
+$("#navBack").onclick = () => { lastCmdAt = 0; partBack(); };
+$("#navRepeat").onclick = () => { lastCmdAt = 0; partAgain(); };
+$("#title").onclick = () => { renderSteps($("#stepsSheetList")); sheet("#stepsSheet"); };
 document.addEventListener("keydown", e => {
   if (e.key === "Escape" && openSheet) { closeSheets(); return; }
   if ($("#stage").hidden || openSheet) return;
-  if (e.key === " " || e.key === "Enter") { e.preventDefault(); command("next", "tap"); }
-  else if (e.key === "r") command("repeat", "tap");
+  if (e.key === " " || e.key === "Enter" || e.key === "ArrowRight") { e.preventDefault(); partNext(); }
+  else if (e.key === "r") partAgain();
   else if (e.key === "p") { lastCmdAt = 0; command(paused ? "resume" : "pause", "tap"); }
-  else if (e.key === "ArrowLeft") command("back", "tap");
+  else if (e.key === "ArrowLeft") partBack();
 });
 
 /* re-render the words on screen after a script change */
