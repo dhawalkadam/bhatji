@@ -86,12 +86,14 @@ body.waiting #kolam .next{animation:pulse 2.4s ease-in-out infinite}
 .btns .primary+.primary{margin-top:10px}
 
 /* ---------- the pooja ---------- */
-#stage{justify-content:center;gap:12px}
+#stage{justify-content:center;gap:12px;padding-bottom:24px}
 .steptitle{font:inherit;font-size:15px;color:var(--haldi);font-weight:600;background:none;border:0;min-height:36px;padding:0 10px;border-radius:18px;cursor:pointer}
 .steptitle:after{content:"";display:inline-block;width:6px;height:6px;margin-left:8px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:translateY(-3px) rotate(45deg);opacity:.8}
 .steptitle:hover{background:rgba(0,0,0,.1)}
 .line{font-family:"Yatra One",serif;font-size:clamp(26px,4.4vh,36px);line-height:1.35;color:#fff;max-width:600px;opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s ease;position:relative}
-.line.on{opacity:1;transform:none}
+.line.on{opacity:1;transform:none;animation:rise .6s ease}
+.line:not(.on),.instr:not(.on){display:none}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .line .a{display:block}
 .line .ro{display:block;font-family:"Mukta",sans-serif;font-size:17px;color:var(--soft);line-height:1.4;margin-top:4px}
 body.s-both-en .line .a,body.s-rom .line .a{font-family:"Mukta",sans-serif;font-weight:600}
@@ -99,7 +101,7 @@ body.s-both-en .line .ro{font-family:"Yatra One",serif;font-size:18px}
 .line:after{content:"";display:block;height:3px;border-radius:2px;background:var(--haldi);margin:8px auto 0;width:0;transition:width 1.4s ease}
 .line.rep:after{width:64px}
 .instr{font-size:clamp(18px,2.7vh,22px);line-height:1.55;color:var(--chalk);max-width:560px;opacity:0;transition:opacity .6s ease}
-.instr.on{opacity:1}
+.instr.on{opacity:1;animation:xfade .6s ease}
 .instr .ro{display:block;font-size:15px;color:var(--soft);margin-top:2px}
 .instr.explain{font-size:clamp(16px,2.4vh,19px);color:var(--soft);font-style:normal}
 .instr.explain:before{content:"अर्थ";display:block;font-size:13px;font-weight:700;color:var(--haldi);margin-bottom:4px}

@@ -296,7 +296,7 @@ function go(i, part) {
 function partNext() {
   if (cmdResolve) { cmdResolve("next"); return; }
   const items = nodes[idx].items;
-  for (let k = pi + 1; k < items.length; k++) if (isPart(items[k]) || items[k].t === "wait") return go(idx, k);
+  for (let k = pi + 1; k < items.length; k++) if (isPart(items[k]) || items[k].t === "wait" || items[k].t === "hold") return go(idx, k);
   go(idx + 1);
 }
 function partBack() {
@@ -309,6 +309,7 @@ function partBack() {
 }
 function partAgain() {
   const items = nodes[idx].items;
+  if (items[pi] && items[pi].t === "hold") return go(idx, 0);
   if (items[pi] && items[pi].t === "wait") { const f = items.findIndex(it => it.t === "line"); return go(idx, f >= 0 ? f : 0); }
   go(idx, pi);
 }
@@ -347,6 +348,14 @@ async function runNode(t, start = 0) {
       document.body.classList.add("waiting");
       await sleep(Math.max(4500, txt.length * 170), t); if (!alive(t)) return;
       youEl.hidden = true;
+    } else if (it.t === "hold") {
+      // e.g. the aarti: Bhatji waits until you say/tap ‘झालं’, then carries on with the shloka
+      if (lastSay) showInstr(lastSay);
+      const r = await waitCmd(Infinity, t);
+      if (r === "cancel" || !alive(t)) return;
+      if (r === "repeat") return go(idx, 0);
+      if (r === "back") return partBack();
+      continue;
     } else if (it.t === "auto") {
       await sleep(sawLine ? 1600 : 900, t); if (!alive(t)) return;
       return next(t);
